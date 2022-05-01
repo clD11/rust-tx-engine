@@ -1,7 +1,7 @@
 use crate::{client, errors};
 use std::collections::HashMap;
 
-/// Holds the clients and processes the transactions.
+/// Contains the clients mapped client id
 /// This code is NOT thread safe and should be used with appropriate concurrency techniques.
 pub struct TxEngine {
     pub(crate) clients: HashMap<u16, client::Client>,
@@ -15,6 +15,8 @@ impl TxEngine {
     }
 
     pub(crate) fn process(&mut self, txn: client::Transaction) {
+        println!("{:?}", txn);
+
         let account = self
             .clients
             .entry(txn.client)
@@ -36,5 +38,5 @@ impl TxEngine {
 
 /// logs a client error to centralised logging
 fn log(e: errors::Error) {
-    // log error -> println!(client error: e)
+    println!("client error: {:?}", e);
 }
