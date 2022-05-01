@@ -1,13 +1,13 @@
-use crate::client::Transaction;
+use crate::client::TransactionType;
 use std::result;
 use thiserror::Error;
 
-pub type Result<'a, T> = result::Result<T, Error<'a>>;
+pub type Result<T> = result::Result<T, Error>;
 
 #[derive(Error, Debug, Clone, PartialEq)]
 #[non_exhaustive]
 #[allow(clippy::large_enum_variant)]
-pub enum Error<'a> {
+pub enum Error {
     /// Client error transaction already deposited
     #[error("error transaction already deposited: tx {0}")]
     DepositError(u32),
@@ -21,14 +21,10 @@ pub enum Error<'a> {
     InsufficientFundsError(f32, f32),
 
     /// Client error invalid transaction type for action
-    #[error("error transaction must be of type {0} found {1}")]
-    InvalidTxnTypeError(&'a str, String),
+    #[error("error transaction must be of type deposit found {0}")]
+    InvalidTxnTypeError(TransactionType),
 
     /// Client error account locked. Once an account is locked no more actions are permitted
     #[error("error account locked {0}")]
     AccountLockedError(u16),
-
-    /// Client error unsupported account action
-    #[error("error unsupported account action {0}")]
-    InvalidAccountAction(String),
 }

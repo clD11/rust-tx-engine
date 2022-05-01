@@ -1,0 +1,5 @@
+input target/debug/rust-tx-engine
+output test/transactions.csv
+Client { client_id: 1, account: Account { available: 10.0, held: 0.0, total: 10.0, locked: false }, transactions: {1: Transaction { tx_type: Deposit, client: 1, tx: 1, amount: 5.0 }, 2: Transaction { tx_type: Deposit, client: 1, tx: 2, amount: 5.0 }} }
+Client { client_id: 2, account: Account { available: 15.0, held: 0.0, total: 15.0, locked: false }, transactions: {3: Transaction { tx_type: Deposit, client: 2, tx: 3, amount: 10.0 }, 4: Transaction { tx_type: Deposit, client: 2, tx: 4, amount: 5.0 }} }
+Done

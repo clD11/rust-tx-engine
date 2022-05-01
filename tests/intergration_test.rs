@@ -1,12 +1,10 @@
+/// Provides integration tests for different scenarios within the transactor engine.
+/// These test run the full flow i.e. provide a file in a given state and assert the result.
 
 #[test]
-fn should_test_all_transactions_types_single_stream() {
-    // read in
-    assert_eq!("hello", "hello")
-}
+fn should_not_allow_further_actions_after_chargeback() {
+    // given a transaction in a disputed state
 
-#[test]
-fn should_test_all_transactions_types_multiple_stream() {
     // read in
     assert_eq!("hello", "hello")
 }
