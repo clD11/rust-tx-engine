@@ -1,7 +1,9 @@
+use std::borrow::Borrow;
 use rand::Rng;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::HashMap;
 use std::fmt;
+use std::ops::{Add, Sub};
 
 use crate::errors;
 use errors::Result;
@@ -26,9 +28,9 @@ impl Client {
         Client {
             client_id,
             account: Account {
-                available: 0.0,
-                held: 0.0,
-                total: 0.0,
+                available: f32::default(),
+                held: f32::default(),
+                total: f32::default(),
                 locked: false,
             },
             transactions: HashMap::new(),
@@ -44,8 +46,8 @@ impl Client {
             return Err(errors::Error::DepositError(transaction.tx));
         }
 
-        self.account.total += transaction.amount;
-        self.account.available += transaction.amount;
+        self.account.total += &transaction.amount.unwrap();
+        self.account.available += &transaction.amount.unwrap();
         self.transactions.insert(transaction.tx, transaction);
 
         Ok(())
@@ -56,15 +58,15 @@ impl Client {
             return Err(errors::Error::AccountLockedError(transaction.client));
         }
 
-        if self.account.available - &transaction.amount < 0.0 {
+        if self.account.available - &transaction.amount.unwrap() < 0.0 {
             return Err(errors::Error::InsufficientFundsError(
                 self.account.available,
-                transaction.amount,
+                transaction.amount.unwrap(),
             ));
         }
 
-        self.account.total -= &transaction.amount;
-        self.account.available -= &transaction.amount;
+        self.account.total -= &transaction.amount.unwrap();
+        self.account.available -= &transaction.amount.unwrap();
 
         Ok(())
     }
@@ -73,56 +75,49 @@ impl Client {
         if self.account.locked {
             return Err(errors::Error::AccountLockedError(transaction.client));
         }
-
-        if !self.transactions.contains_key(&transaction.tx) {
-            return Err(errors::Error::NonExistentTxnError(transaction.tx));
+        match self.transactions.get(&transaction.tx) {
+            Some(txn) => {
+                self.account.available -= &txn.amount.unwrap();
+                self.account.held += &txn.amount.unwrap();
+                Ok(())
+            }
+            _ => return Err(errors::Error::NonExistentTxnError(transaction.tx)),
         }
-
-        self.account.available -= &transaction.amount;
-        self.account.held += &transaction.amount;
-
-        Ok(())
     }
 
     pub fn resolve(&mut self, transaction: Transaction) -> Result<()> {
         if self.account.locked {
             return Err(errors::Error::AccountLockedError(transaction.client));
         }
-
-        if transaction.tx_type != TransactionType::Dispute {
-            return Err(errors::Error::InvalidTxnTypeError(transaction.tx_type));
+        match self.transactions.get(&transaction.tx) {
+            Some(txn) => {
+                if txn.tx_type != TransactionType::Dispute {
+                    return Err(errors::Error::InvalidTxnTypeError(transaction.tx_type));
+                }
+                self.account.held -= &txn.amount.unwrap();
+                self.account.available += &txn.amount.unwrap();
+                Ok(())
+            }
+            _ => return Err(errors::Error::NonExistentTxnError(transaction.tx)),
         }
-
-        let txn = self.transactions.get(&transaction.tx);
-        if txn.is_none() {
-            return Err(errors::Error::NonExistentTxnError(transaction.tx));
-        }
-
-        self.account.held -= txn.unwrap().amount;
-        self.account.available += txn.unwrap().amount;
-
-        Ok(())
     }
 
     pub fn chargeback(&mut self, transaction: Transaction) -> Result<()> {
         if self.account.locked {
             return Err(errors::Error::AccountLockedError(transaction.client));
         }
-
-        if transaction.tx_type != TransactionType::Dispute {
-            return Err(errors::Error::InvalidTxnTypeError(transaction.tx_type));
+        match self.transactions.get(&transaction.tx) {
+            Some(txn) => {
+                if txn.tx_type != TransactionType::Dispute {
+                    return Err(errors::Error::InvalidTxnTypeError(transaction.tx_type));
+                }
+                self.account.held -= &txn.amount.unwrap();
+                self.account.total -= &txn.amount.unwrap();
+                self.account.locked = true;
+                Ok(())
+            }
+            _ => return Err(errors::Error::NonExistentTxnError(transaction.tx)),
         }
-
-        let txn = self.transactions.get(&transaction.tx);
-        if txn.is_none() {
-            return Err(errors::Error::NonExistentTxnError(transaction.tx));
-        }
-
-        self.account.held -= txn.unwrap().amount;
-        self.account.total -= txn.unwrap().amount;
-        self.account.locked = true;
-
-        Ok(())
     }
 }
 
@@ -178,7 +173,7 @@ pub(crate) struct Transaction {
     pub tx_type: TransactionType,
     pub client: u16,
     tx: u32,
-    amount: f32,
+    amount: Option<f32>
 }
 
 #[cfg(test)]
@@ -221,7 +216,7 @@ mod tests {
             tx_type: TransactionType::Dispute,
             client: rng.gen::<u16>(),
             tx: rng.gen::<u32>(),
-            amount: rng.gen::<f32>(),
+            amount: Option::Some(rng.gen::<f32>()),
         }
     }
 }

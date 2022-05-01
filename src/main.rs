@@ -1,5 +1,6 @@
 use csv::Trim::All;
 
+use crate::client::Transaction;
 use crate::tx_engine::TxEngine;
 use std::{env, io};
 
@@ -15,13 +16,21 @@ fn main() -> Result<(), io::Error> {
 
     // process the transactions
     let mut tx_engine = TxEngine::new();
+
     let mut rdr = csv::ReaderBuilder::new()
         .flexible(true)
         .trim(All)
         .from_path(input_path)?;
-    for result in rdr.deserialize() {
-        let txn: client::Transaction = result?;
-        tx_engine.process(txn);
+
+    for txn in rdr.deserialize::<Transaction>() {
+        match txn {
+            Ok(txn) => {
+                tx_engine.process(txn);
+            }
+            Err(err) => {
+                println!("error reading CSV from <stdin>: {}", err);
+            }
+        }
     }
 
     // write output
