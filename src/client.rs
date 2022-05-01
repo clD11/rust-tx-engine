@@ -58,6 +58,8 @@ impl Client {
             return Err(errors::Error::AccountLockedError(transaction.client));
         }
 
+        // TODO add double withdrawal
+
         if self.account.available - &transaction.amount.unwrap() < 0.0 {
             return Err(errors::Error::InsufficientFundsError(
                 self.account.available,
