@@ -26,7 +26,7 @@ fn main() -> Result<(), io::Error> {
                 tx_engine.process(&event);
             }
             Err(err) => {
-                println!("error reading CSV from <stdin>: {}", err);
+                println!("error reading event: {}", err);
             }
         }
     }
