@@ -1,7 +1,6 @@
 use crate::account::Transaction;
 use crate::tx_engine::TxEngine;
 use csv::Trim::All;
-use std::path::PathBuf;
 use std::{env, io};
 
 mod account;
@@ -39,7 +38,7 @@ fn main() -> Result<(), io::Error> {
 
     wtr.write_record(&["client", "available", "held", "total", "locked"])?;
 
-    &tx_engine.accounts.iter().for_each(|(client_id, account)| {
+    tx_engine.accounts.iter().for_each(|(client_id, account)| {
         wtr.serialize((
             client_id,
             account.account_info.available,

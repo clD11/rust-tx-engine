@@ -2,7 +2,6 @@ use std::result;
 use rust_decimal::Decimal;
 
 use thiserror::Error;
-use crate::tx_engine::EventType;
 
 pub type Result<T> = result::Result<T, Error>;
 

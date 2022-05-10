@@ -1,9 +1,8 @@
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::Deserialize;
 use crate::{account, errors, Transaction};
 use rust_decimal::Decimal;
 use std::collections::HashMap;
 use std::fmt;
-use rust_decimal::prelude::Zero;
 
 pub struct TxEngine {
     pub(crate) accounts: HashMap<u16, account::Account>,
@@ -85,6 +84,7 @@ impl fmt::Display for EventType {
     }
 }
 
-fn log(e: errors::Error) {
-    println!("client error: {:?}", e);
+// Would normally send error to logs
+fn log(_e: errors::Error) {
+    //println!("client error: {:?}", e);
 }

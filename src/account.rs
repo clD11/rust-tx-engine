@@ -1,8 +1,5 @@
-use serde::{Deserialize, Deserializer, Serialize};
-use std::borrow::Borrow;
+use serde::Serialize;
 use std::collections::HashMap;
-use std::fmt;
-use std::ops::{Add, Sub};
 use rust_decimal::Decimal;
 use rust_decimal::prelude::Zero;
 
@@ -151,10 +148,8 @@ impl Transaction {
 
 #[cfg(test)]
 mod tests {
-    use std::convert::TryFrom;
     use rand::{thread_rng, Rng};
     use super::*;
-    use crate::errors;
 
     #[test]
     fn test_deposit() {
@@ -165,7 +160,7 @@ mod tests {
 
         let mut account = Account::new(1);
 
-        let deposit = account.deposit(transaction);
+        let _deposit = account.deposit(transaction);
 
         assert_eq!(account.deposits.contains_key(&tx), true);
         assert_eq!(account.account_info.available, amount);
@@ -178,12 +173,12 @@ mod tests {
         let tx_deposit = thread_rng().gen::<u32>();
         let t_deposit = new_transaction(tx_deposit, Some(Decimal::new(10, 0)));
 
-        let deposit = account.deposit(t_deposit);
+        let _deposit = account.deposit(t_deposit);
 
         let tx_withdrawal = thread_rng().gen::<u32>();
         let t_withdrawal = new_transaction(tx_withdrawal, Some(Decimal::new(5, 0)));
 
-        let withdrawal = account.withdrawal(t_withdrawal);
+        let _withdrawal = account.withdrawal(t_withdrawal);
 
         assert_eq!(account.deposits.contains_key(&tx_deposit), true);
         assert_ne!(account.deposits.contains_key(&tx_withdrawal), true);
@@ -198,10 +193,10 @@ mod tests {
         let tx_deposit = thread_rng().gen::<u32>();
         let t_deposit = new_transaction(tx_deposit, Some(Decimal::new(10, 0)));
 
-        let deposit = account.deposit(t_deposit);
+        let _deposit = account.deposit(t_deposit);
 
         let t_dispute = new_transaction(tx_deposit, None);
-        let dispute = account.dispute(t_dispute);
+        let _dispute = account.dispute(t_dispute);
 
         assert_eq!(account.deposits.contains_key(&tx_deposit), true);
         assert_eq!(account.account_info.available, Decimal::new(0, 0));
@@ -216,13 +211,13 @@ mod tests {
         let tx_deposit = thread_rng().gen::<u32>();
         let t_deposit = new_transaction(tx_deposit, Some(Decimal::new(10, 0)));
 
-        let deposit = account.deposit(t_deposit);
+        let _deposit = account.deposit(t_deposit);
 
         let t_dispute = new_transaction(tx_deposit, None);
-        let dispute = account.dispute(t_dispute);
+        let _dispute = account.dispute(t_dispute);
 
         let t_resolve = new_transaction(tx_deposit, None);
-        let dispute = account.resolve(t_resolve);
+        let _dispute = account.resolve(t_resolve);
 
         assert_eq!(account.deposits.contains_key(&tx_deposit), true);
         assert_eq!(account.account_info.available, Decimal::new(10, 0));
@@ -237,13 +232,13 @@ mod tests {
         let tx_deposit = thread_rng().gen::<u32>();
         let t_deposit = new_transaction(tx_deposit, Some(Decimal::new(10, 0)));
 
-        let deposit = account.deposit(t_deposit);
+        let _deposit = account.deposit(t_deposit);
 
         let t_dispute = new_transaction(tx_deposit, None);
-        let dispute = account.dispute(t_dispute);
+        let _dispute = account.dispute(t_dispute);
 
         let t_resolve = new_transaction(tx_deposit, None);
-        let dispute = account.chargeback(t_resolve);
+        let _dispute = account.chargeback(t_resolve);
 
         assert_eq!(account.deposits.contains_key(&tx_deposit), true);
         assert_eq!(account.account_info.held, Decimal::new(0, 0));
