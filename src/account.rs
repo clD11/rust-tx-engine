@@ -86,7 +86,7 @@ impl Account {
         match self.deposits.get_mut(&transaction.tx) {
             Some(txn) => {
                 if !txn.disputed {
-                    return Err(errors::Error::DisputeError(transaction.tx));
+                    return Err(errors::Error::InvalidAccountAction(transaction.tx));
                 }
 
                 self.account_info.held -= &txn.amount.unwrap();
@@ -149,6 +149,7 @@ impl Transaction {
 #[cfg(test)]
 mod tests {
     use rand::{thread_rng, Rng};
+    use crate::errors::Error::{DisputeError, InvalidAccountAction};
     use super::*;
 
     #[test]
@@ -205,6 +206,29 @@ mod tests {
     }
 
     #[test]
+    fn test_dispute_already_disputed() {
+        let mut account = Account::new(1);
+
+        let tx_deposit = thread_rng().gen::<u32>();
+        let t_deposit = new_transaction(tx_deposit, Some(Decimal::new(10, 0)));
+
+        let _deposit = account.deposit(t_deposit);
+
+        let t_dispute = new_transaction(tx_deposit, None);
+        let _ = account.dispute(t_dispute);
+
+        let t_dispute_again = new_transaction(tx_deposit, None);
+        let dispute = account.dispute(t_dispute_again);
+
+        assert_eq!(dispute, Err(DisputeError(tx_deposit)));
+
+        assert_eq!(account.deposits.contains_key(&tx_deposit), true);
+        assert_eq!(account.account_info.available, Decimal::new(0, 0));
+        assert_eq!(account.account_info.held, Decimal::new(10, 0));
+        assert_eq!(account.account_info.total(), Decimal::new(10, 0));
+    }
+
+    #[test]
     fn test_resolve() {
         let mut account = Account::new(1);
 
@@ -218,6 +242,26 @@ mod tests {
 
         let t_resolve = new_transaction(tx_deposit, None);
         let _dispute = account.resolve(t_resolve);
+
+        assert_eq!(account.deposits.contains_key(&tx_deposit), true);
+        assert_eq!(account.account_info.available, Decimal::new(10, 0));
+        assert_eq!(account.account_info.held, Decimal::new(0, 0));
+        assert_eq!(account.account_info.total(), Decimal::new(10, 0));
+    }
+
+    #[test]
+    fn test_resolve_not_already_disputed() {
+        let mut account = Account::new(1);
+
+        let tx_deposit = thread_rng().gen::<u32>();
+        let t_deposit = new_transaction(tx_deposit, Some(Decimal::new(10, 0)));
+
+        let _deposit = account.deposit(t_deposit);
+
+        let t_resolve = new_transaction(tx_deposit, None);
+        let dispute = account.resolve(t_resolve);
+
+        assert_eq!(dispute, Err(InvalidAccountAction(tx_deposit)));
 
         assert_eq!(account.deposits.contains_key(&tx_deposit), true);
         assert_eq!(account.account_info.available, Decimal::new(10, 0));
@@ -244,6 +288,26 @@ mod tests {
         assert_eq!(account.account_info.held, Decimal::new(0, 0));
         assert_eq!(account.account_info.total(), Decimal::new(0, 0));
         assert_eq!(account.account_info.locked, true);
+    }
+
+    #[test]
+    fn test_chargeback_not_already_disputed() {
+        let mut account = Account::new(1);
+
+        let tx_deposit = thread_rng().gen::<u32>();
+        let t_deposit = new_transaction(tx_deposit, Some(Decimal::new(10, 0)));
+
+        let _deposit = account.deposit(t_deposit);
+
+        let t_chargeback = new_transaction(tx_deposit, None);
+        let chargeback = account.chargeback(t_chargeback);
+
+        assert_eq!(chargeback, Err(InvalidAccountAction(tx_deposit)));
+
+        assert_eq!(account.deposits.contains_key(&tx_deposit), true);
+        assert_eq!(account.account_info.held, Decimal::new(0, 0));
+        assert_eq!(account.account_info.total(), Decimal::new(10, 0));
+        assert_eq!(account.account_info.locked, false);
     }
 
     fn new_transaction(tx: u32, amount: Option<Decimal>) -> Transaction {
