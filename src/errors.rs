@@ -1,7 +1,8 @@
-use crate::client::TransactionType;
 use std::result;
+use rust_decimal::Decimal;
 
 use thiserror::Error;
+use crate::tx_engine::EventType;
 
 pub type Result<T> = result::Result<T, Error>;
 
@@ -9,23 +10,22 @@ pub type Result<T> = result::Result<T, Error>;
 #[non_exhaustive]
 #[allow(clippy::large_enum_variant)]
 pub enum Error {
-    /// Client error transaction already deposited
+
     #[error("error transaction already deposited: tx {0}")]
     DepositError(u32),
 
-    /// Client error transaction does not exist"
+    #[error("error transaction already disputed: tx {0}")]
+    DisputeError(u32),
+
     #[error("error transaction does not exist: tx {0}")]
     NonExistentTxnError(u32),
 
-    /// Client error insufficient funds for withdrawal
     #[error("error insufficient funds for withdrawal: available {0} requested {1}")]
-    InsufficientFundsError(f32, f32),
+    InsufficientFundsError(Decimal, Decimal),
 
-    /// Client error invalid transaction type for action
-    #[error("error transaction must be of type deposit found {0}")]
-    InvalidTxnTypeError(TransactionType),
+    #[error("error transaction {0} is not in the dispute state")]
+    InvalidAccountAction(u32),
 
-    /// Client error account locked. Once an account is locked no more actions are permitted
     #[error("error account locked {0}")]
     AccountLockedError(u16),
 }
