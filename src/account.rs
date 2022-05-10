@@ -182,8 +182,8 @@ mod tests {
 
         assert_eq!(account.deposits.contains_key(&tx_deposit), true);
         assert_ne!(account.deposits.contains_key(&tx_withdrawal), true);
-        assert_eq!(account.account_info.available, Decimal::new(5, 4));
-        assert_eq!(account.account_info.total(), Decimal::new(5, 4));
+        assert_eq!(account.account_info.available, Decimal::new(5, 0));
+        assert_eq!(account.account_info.total(), Decimal::new(5, 0));
     }
 
     #[test]

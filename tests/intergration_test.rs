@@ -1,11 +1,10 @@
 use assert_cmd::prelude::*;
-use assert_fs::prelude::*;
 use predicates::prelude::*;
 use std::process::Command;
 
 /// Provides integration tests for different scenarios within the transactor engine.
 /// These test run the full flow i.e. provide a file in a given state and assert the result.
-/// Could use BDD framework fro this
+/// Could use BDD framework for this
 
 const ACCOUNT_HEADERS: &str = "client,available,held,total,locked\n";
 
