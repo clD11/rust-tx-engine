@@ -1,5 +1,5 @@
-use std::result;
 use rust_decimal::Decimal;
+use std::result;
 
 use thiserror::Error;
 
@@ -9,7 +9,6 @@ pub type Result<T> = result::Result<T, Error>;
 #[non_exhaustive]
 #[allow(clippy::large_enum_variant)]
 pub enum Error {
-
     #[error("error transaction already deposited: tx {0}")]
     DepositError(u32),
 

@@ -1,6 +1,6 @@
-use serde::Deserialize;
 use crate::{account, errors, Transaction};
 use rust_decimal::Decimal;
+use serde::Deserialize;
 use std::collections::HashMap;
 use std::fmt;
 
@@ -16,12 +16,12 @@ impl TxEngine {
     }
 
     pub(crate) fn process(&mut self, event: &Event) {
-        let txn: Transaction = event.into();
-
         let account = self
             .accounts
             .entry(event.client)
             .or_insert(account::Account::new(event.client));
+
+        let txn: Transaction = event.into();
 
         match event.event_type {
             EventType::Deposit => account.deposit(txn).unwrap_or_else(|e| log(e)),
@@ -62,10 +62,10 @@ impl From<&Event> for Transaction {
                     num
                 });
                 Transaction::new(event.tx, amount)
-            },
+            }
             EventType::Dispute | EventType::Resolve | EventType::Chargeback => {
                 Transaction::new(event.tx, None)
-            },
+            }
         }
     }
 }

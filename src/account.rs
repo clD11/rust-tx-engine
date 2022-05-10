@@ -1,7 +1,7 @@
+use rust_decimal::prelude::Zero;
+use rust_decimal::Decimal;
 use serde::Serialize;
 use std::collections::HashMap;
-use rust_decimal::Decimal;
-use rust_decimal::prelude::Zero;
 
 use crate::errors;
 use errors::Result;
@@ -148,9 +148,9 @@ impl Transaction {
 
 #[cfg(test)]
 mod tests {
-    use rand::{thread_rng, Rng};
-    use crate::errors::Error::{DisputeError, InvalidAccountAction};
     use super::*;
+    use crate::errors::Error::{DisputeError, InvalidAccountAction};
+    use rand::{thread_rng, Rng};
 
     #[test]
     fn test_deposit() {
@@ -314,7 +314,7 @@ mod tests {
         Transaction {
             tx,
             amount,
-            disputed: false
+            disputed: false,
         }
     }
 }
